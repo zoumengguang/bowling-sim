@@ -3,20 +3,10 @@ import React, { Component } from "react";
 class Simulator extends Component {
   state = {
     curFrame: 1,
-    lastBowl: 10,
+    pinsLeft: 10,
     timesBowled: 0,
-    score: {
-      one: [],
-      two: [],
-      three: [],
-      four: [],
-      five: [],
-      six: [],
-      seven: [],
-      eight: [],
-      nine: [],
-      ten: []
-    }
+    curScore: 0,
+    scoreboard: [[], [], [], [], [], [], [], [], [], []]
   };
 
   componentDidMount() {
@@ -35,30 +25,6 @@ class Simulator extends Component {
     this.setState({ ...this.state, simId: simId });
   };
 
-  // Generate bowl
-  getBowl = () => {
-    const { curFrame, lastBowl, timesBowled, simId, score } = this.state;
-    const scoreArr = this.getScoreArr(curFrame);
-
-    // If frame is greater than 10, terminate interval
-    if (curFrame > 10) {
-      clearInterval(simId);
-    }
-
-    // Else calculate the bowl
-    let min = 0;
-    let max = lastBowl + 1;
-    let bowl = Math.floor(Math.random() * (max - min)) + min;
-
-    if (curFrame === 10 && timesBowled < 3 && bowl === 10) {
-      scoreArr.push("X");
-      clearInterval(simId);
-      this.setState({ curFrame: curFrame + 1, lastBowl: 10, timesBowled: 0 });
-    } else if (curFrame === 10 && timesBowled < 3 && bowl != 10) {
-      scoreArr.push(bowl.toString());
-    }
-  };
-
   // Algorithm for calculating a number within a range
   // The maximum is exclusive and the minimum is inclusive
   /*  getBowl = (min, max) => {
@@ -67,58 +33,130 @@ class Simulator extends Component {
     return Math.floor(Math.random() * (max - min)) + min;
   }; */
 
-  // Helper function for retrieving score for current frame
-  getScoreArr = curFrame => {
-    const { score } = this.state;
+  // Generate bowl
+  getBowl = () => {
+    const { curFrame, pinsLeft, simId, timesBowled } = this.state;
 
-    switch (curFrame) {
-      case 10:
-        return score.ten;
-      case 9:
-        return score.nine;
-      case 8:
-        return score.eight;
-      case 7:
-        return score.seven;
-      case 6:
-        return score.six;
-      case 5:
-        return score.five;
-      case 4:
-        return score.four;
-      case 3:
-        return score.three;
-      case 2:
-        return score.two;
-      case 1:
-        return score.one;
+    // If frame is greater than 10, terminate interval
+    if (curFrame > 10) {
+      clearInterval(simId);
+      return;
+    }
+
+    // Else calculate the bowl
+    let min = 0;
+    let max = pinsLeft + 1;
+    var bowl = Math.floor(Math.random() * (max - min)) + min;
+
+    this.checkBowl(bowl);
+  };
+
+  /*
+    List of vars
+    curFrame: 1,
+    pinsLeft: 10, Counts pins remaining on subsequent bowls past first on a frame
+    timesBowled: 0, Number of times bowled in a frame
+    strike: 2, Count remaining number of strike bonuses
+    spare: false, Count if spare bonus
+    curScore: current running score
+    scoreboard: array of arrays, each individual array is a frame
+  */
+
+  /* checkStrikeOrSpare = bowl => {
+    const { pinsLeft } = this.state;
+
+    if (bowl === 10) {
+      return "X";
+    } else if (bowl === pinsLeft) {
+      return "/";
+    } else {
+      return bowl;
+    }
+  }; */
+
+  // Check the conditions and score the bowl
+  checkBowl = bowl => {
+    const { curFrame, timesBowled, pinsLeft, scoreboard } = this.state;
+    let scoreArr = scoreboard;
+
+    if (timesBowled > 0) {
+      if (bowl === pinsLeft) {
+        scoreArr[curFrame - 1].push("/");
+        this.setState({
+          ...this.state,
+          curFrame: curFrame + 1,
+          timesBowled: 0,
+          pinsLeft: 10,
+          scoreboard: scoreArr
+        });
+      } else if (bowl !== pinsLeft) {
+        scoreArr[curFrame - 1].push(bowl.toString());
+        this.setState({
+          ...this.state,
+          curFrame: curFrame + 1,
+          timesBowled: 0,
+          pinsLeft: 10,
+          scoreboard: scoreArr
+        });
+      }
+    } else if (timesBowled === 0) {
+      if (bowl === 10) {
+        scoreArr[curFrame - 1].push("X");
+        this.setState({
+          ...this.state,
+          curFrame: curFrame + 1,
+          timesBowled: 0,
+          pinsLeft: 10,
+          scoreboard: scoreArr
+        });
+      } else if (bowl < 10) {
+        scoreArr[curFrame - 1].push(bowl.toString());
+        this.setState({
+          ...this.state,
+          timesBowled: 1,
+          pinsLeft: 10 - bowl,
+          scoreboard: scoreArr
+        });
+      }
     }
   };
 
   render() {
-    const { score, curFrame } = this.state;
+    console.log(this.state);
+    const { scoreboard } = this.state;
 
     return (
       <table>
-        <tr>
-          <td>Frame</td>
-          <th>1</th>
-          <th>2</th>
-          <th>3</th>
-          <th>4</th>
-          <th>5</th>
-          <th>6</th>
-          <th>7</th>
-          <th>8</th>
-          <th>9</th>
-          <th>10</th>
-        </tr>
-        <tr>
-          <td>Score</td>
-        </tr>
+        <tbody>
+          <tr>
+            <td>Frame</td>
+            <th>1</th>
+            <th>2</th>
+            <th>3</th>
+            <th>4</th>
+            <th>5</th>
+            <th>6</th>
+            <th>7</th>
+            <th>8</th>
+            <th>9</th>
+            <th>10</th>
+          </tr>
+          <tr>
+            <td>Score</td>
+            <th>{scoreboard[0]}</th>
+            <th>{scoreboard[1]}</th>
+            <th>{scoreboard[2]}</th>
+            <th>{scoreboard[3]}</th>
+            <th>{scoreboard[4]}</th>
+            <th>{scoreboard[5]}</th>
+            <th>{scoreboard[6]}</th>
+            <th>{scoreboard[7]}</th>
+            <th>{scoreboard[8]}</th>
+            <th>{scoreboard[9]}</th>
+          </tr>
+        </tbody>
       </table>
     );
   }
 }
-
 export default Simulator;
