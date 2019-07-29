@@ -1,6 +1,14 @@
 import React, { Component } from "react";
 
 class Simulator extends Component {
+  /* List of vars
+   * curFrame: 1, self explanatory
+   * pinsLeft: 10, Counts pins remaining on subsequent bowls past first on a frame
+   * timesBowled: 0, Number of times bowled in a frame
+   * curScore: current running score
+   * scoreboard: array of arrays, each individual array is a frame's score
+   */
+
   state = {
     curFrame: 1,
     pinsLeft: 10,
@@ -21,21 +29,13 @@ class Simulator extends Component {
   startBowl = () => {
     const simId = setInterval(() => {
       this.getBowl();
-    }, 1000);
+    }, 1);
     this.setState({ ...this.state, simId: simId });
   };
 
-  // Algorithm for calculating a number within a range
-  // The maximum is exclusive and the minimum is inclusive
-  /*  getBowl = (min, max) => {
-    min = Math.ceil(min);
-    max = Math.floor(max);
-    return Math.floor(Math.random() * (max - min)) + min;
-  }; */
-
-  // Generate bowl
+  // Generate bowl and check game end condition
   getBowl = () => {
-    const { curFrame, pinsLeft, simId, timesBowled } = this.state;
+    const { curFrame, pinsLeft, simId } = this.state;
 
     // If frame is greater than 10, terminate interval
     if (curFrame > 10) {
@@ -44,6 +44,7 @@ class Simulator extends Component {
     }
 
     // Else calculate the bowl
+    // max is exclusive, min is inclusive
     let min = 0;
     let max = pinsLeft + 1;
     var bowl = Math.floor(Math.random() * (max - min)) + min;
@@ -51,70 +52,133 @@ class Simulator extends Component {
     this.checkBowl(bowl);
   };
 
-  /*
-    List of vars
-    curFrame: 1,
-    pinsLeft: 10, Counts pins remaining on subsequent bowls past first on a frame
-    timesBowled: 0, Number of times bowled in a frame
-    strike: 2, Count remaining number of strike bonuses
-    spare: false, Count if spare bonus
-    curScore: current running score
-    scoreboard: array of arrays, each individual array is a frame
-  */
-
-  /* checkStrikeOrSpare = bowl => {
-    const { pinsLeft } = this.state;
-
-    if (bowl === 10) {
-      return "X";
-    } else if (bowl === pinsLeft) {
-      return "/";
-    } else {
-      return bowl;
-    }
-  }; */
-
   // Check the conditions and score the bowl
   checkBowl = bowl => {
     const { curFrame, timesBowled, pinsLeft, scoreboard } = this.state;
     let scoreArr = scoreboard;
 
+    // If subsequent bowl of the frame
     if (timesBowled > 0) {
-      if (bowl === pinsLeft) {
-        scoreArr[curFrame - 1].push("/");
-        this.setState({
-          ...this.state,
-          curFrame: curFrame + 1,
-          timesBowled: 0,
-          pinsLeft: 10,
-          scoreboard: scoreArr
-        });
-      } else if (bowl !== pinsLeft) {
-        scoreArr[curFrame - 1].push(bowl.toString());
-        this.setState({
-          ...this.state,
-          curFrame: curFrame + 1,
-          timesBowled: 0,
-          pinsLeft: 10,
-          scoreboard: scoreArr
-        });
+      // Check for special 10th frame rules
+      if (curFrame === 10) {
+        // If this is the second bowl of the 10th frame
+        if (timesBowled === 1) {
+          if (bowl === pinsLeft) {
+            // check to display spare or strike
+            if (scoreboard[9][0] === "X") {
+              scoreArr[curFrame - 1].push("X");
+            } else {
+              scoreArr[curFrame - 1].push("/");
+            }
+            this.setState({
+              ...this.state,
+              curFrame: curFrame,
+              timesBowled: timesBowled + 1,
+              pinsLeft: 10,
+              scoreboard: scoreArr
+            });
+            // if no strike on first roll end game else prep for third roll
+          } else if (bowl !== pinsLeft) {
+            if (scoreboard[9][0] === "X") {
+              scoreArr[curFrame - 1].push(bowl.toString());
+              this.setState({
+                ...this.state,
+                curFrame: curFrame,
+                timesBowled: timesBowled + 1,
+                pinsLeft: pinsLeft - bowl,
+                scoreboard: scoreArr
+              });
+            } else {
+              scoreArr[curFrame - 1].push(bowl.toString());
+              this.setState({
+                ...this.state,
+                curFrame: curFrame + 1,
+                timesBowled: 0,
+                pinsLeft: 10,
+                scoreboard: scoreArr
+              });
+            }
+          }
+          // 10th frame third bowl scoring
+        } else if (timesBowled === 2) {
+          if (bowl === pinsLeft) {
+            if (scoreboard[9][1] === "X" || scoreboard[9][1] === "/") {
+              scoreArr[curFrame - 1].push("X");
+            } else {
+              scoreArr[curFrame - 1].push("/");
+            }
+            this.setState({
+              ...this.state,
+              curFrame: curFrame + 1,
+              timesBowled: 0,
+              pinsLeft: 10,
+              scoreboard: scoreArr
+            });
+          } else if (bowl !== pinsLeft) {
+            scoreArr[curFrame - 1].push(bowl.toString());
+            this.setState({
+              ...this.state,
+              curFrame: curFrame + 1,
+              timesBowled: 0,
+              pinsLeft: 10,
+              scoreboard: scoreArr
+            });
+          }
+        }
+        // if it's not 10th frame use normal two roll frame logic
+      } else if (curFrame < 10) {
+        // if roll was equal to remaining pins, set spare and advance frame
+        if (bowl === pinsLeft) {
+          scoreArr[curFrame - 1].push("/");
+          this.setState({
+            ...this.state,
+            curFrame: curFrame + 1,
+            timesBowled: 0,
+            pinsLeft: 10,
+            scoreboard: scoreArr
+          });
+          // if roll was not equal to remaining pins, set score and advance frame
+        } else if (bowl !== pinsLeft) {
+          scoreArr[curFrame - 1].push(bowl.toString());
+          this.setState({
+            ...this.state,
+            curFrame: curFrame + 1,
+            timesBowled: 0,
+            pinsLeft: 10,
+            scoreboard: scoreArr
+          });
+        }
       }
+
+      // If first bowl of the frame
     } else if (timesBowled === 0) {
       if (bowl === 10) {
         scoreArr[curFrame - 1].push("X");
-        this.setState({
-          ...this.state,
-          curFrame: curFrame + 1,
-          timesBowled: 0,
-          pinsLeft: 10,
-          scoreboard: scoreArr
-        });
+        // if the curFrame is 10, do not advance frame but reset pins
+        if (curFrame === 10) {
+          this.setState({
+            ...this.state,
+            timesBowled: timesBowled + 1,
+            pinsLeft: 10,
+            scoreboard: scoreArr
+          });
+          // Else advance frame and reset pins
+        } else if (curFrame !== 10) {
+          this.setState({
+            ...this.state,
+            curFrame: curFrame + 1,
+            timesBowled: 0,
+            pinsLeft: 10,
+            scoreboard: scoreArr
+          });
+        }
+        // If not a strike record score and go to next bowl
       } else if (bowl < 10) {
         scoreArr[curFrame - 1].push(bowl.toString());
         this.setState({
           ...this.state,
-          timesBowled: 1,
-          pinsLeft: 10 - bowl,
+          timesBowled: timesBowled + 1,
+          pinsLeft: pinsLeft - bowl,
           scoreboard: scoreArr
         });
       }
