@@ -311,11 +311,9 @@ class Simulator extends Component {
         }
         // 10th FRAME LOGIC
       } else if (i === 9) {
-        console.log(scoreboard[i]);
         // If there are less than 2 bowls in the frame end score
         if (scoreboard[i].length < 2) break;
 
-        console.log("checks");
         // If first bowl strike
         if (scoreboard[i][0] === "X") {
           // If strike if there are less than 3 bowls in the frame end score
