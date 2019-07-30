@@ -35,7 +35,13 @@ class Simulator extends Component {
 
   // Generate bowl
   getBowl = () => {
-    const { pinsLeft } = this.state;
+    const { pinsLeft, curFrame, simId } = this.state;
+
+    // If frame is greater than 10, terminate interval
+    if (curFrame > 10) {
+      clearInterval(simId);
+      return;
+    }
 
     // Else calculate the bowl
     // max is exclusive, min is inclusive
@@ -178,6 +184,7 @@ class Simulator extends Component {
       }
     }
 
+    // Calculate score after bowl
     this.calcScore();
   };
 
@@ -187,15 +194,9 @@ class Simulator extends Component {
   // 10th frame scored by itself
   // Inefficient but due to small input it can be justified
   calcScore = () => {
-    const { curFrame, scoreboard, simId } = this.state;
+    const { curFrame, scoreboard } = this.state;
     var newCurScore = [];
     var runScore = 0;
-
-    // If frame is greater than 10, terminate interval
-    if (curFrame > 10) {
-      clearInterval(simId);
-      return;
-    }
 
     // Calculate score by iterating through each frame
     // Spares and strikes attempt to access future frames and do checks for them
@@ -314,9 +315,10 @@ class Simulator extends Component {
         // If there are less than 2 bowls in the frame end score
         if (scoreboard[i].length < 2) break;
 
+        console.log("checks");
         // If first bowl strike
         if (scoreboard[i][0] === "X") {
-          // If strike there are less than 3 bowls in the frame end score
+          // If strike if there are less than 3 bowls in the frame end score
           if (scoreboard[i].length < 3) break;
 
           // If 2 strikes
@@ -349,7 +351,7 @@ class Simulator extends Component {
           }
           // If spare first two bowls
         } else if (scoreboard[i][1] === "/") {
-          // If spare there are less than 3 bowls in the frame end score
+          // If spare if there are less than 3 bowls in the frame end score
           if (scoreboard[i].length < 3) break;
 
           // If third bowl is strike
@@ -375,7 +377,7 @@ class Simulator extends Component {
   };
 
   render() {
-    console.log(this.state);
+    //console.log(this.state);
     const { scoreboard, curScore } = this.state;
 
     return (
@@ -395,7 +397,7 @@ class Simulator extends Component {
             <th>10</th>
           </tr>
           <tr>
-            <td>Name</td>
+            <td>Bowl</td>
             <th>{scoreboard[0]}</th>
             <th>{scoreboard[1]}</th>
             <th>{scoreboard[2]}</th>
