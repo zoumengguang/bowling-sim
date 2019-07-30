@@ -1,4 +1,5 @@
 import React, { Component } from "react";
+import "./Simulator.css";
 
 class Simulator extends Component {
   /* List of vars
@@ -379,50 +380,50 @@ class Simulator extends Component {
     const { scoreboard, curScore } = this.state;
 
     return (
-      <table>
+      <table className="container">
         <tbody>
           <tr>
             <td>Frame</td>
-            <th>1</th>
-            <th>2</th>
-            <th>3</th>
-            <th>4</th>
-            <th>5</th>
-            <th>6</th>
-            <th>7</th>
-            <th>8</th>
-            <th>9</th>
-            <th>10</th>
+            <th className="cell">1</th>
+            <th className="cell">2</th>
+            <th className="cell">3</th>
+            <th className="cell">4</th>
+            <th className="cell">5</th>
+            <th className="cell">6</th>
+            <th className="cell">7</th>
+            <th className="cell">8</th>
+            <th className="cell">9</th>
+            <th className="cell">10</th>
           </tr>
           <tr>
             <td>Bowl</td>
-            <th>{scoreboard[0]}</th>
-            <th>{scoreboard[1]}</th>
-            <th>{scoreboard[2]}</th>
-            <th>{scoreboard[3]}</th>
-            <th>{scoreboard[4]}</th>
-            <th>{scoreboard[5]}</th>
-            <th>{scoreboard[6]}</th>
-            <th>{scoreboard[7]}</th>
-            <th>{scoreboard[8]}</th>
-            <th>{scoreboard[9]}</th>
+            <th className="cell">{scoreboard[0]}</th>
+            <th className="cell">{scoreboard[1]}</th>
+            <th className="cell">{scoreboard[2]}</th>
+            <th className="cell">{scoreboard[3]}</th>
+            <th className="cell">{scoreboard[4]}</th>
+            <th className="cell">{scoreboard[5]}</th>
+            <th className="cell">{scoreboard[6]}</th>
+            <th className="cell">{scoreboard[7]}</th>
+            <th className="cell">{scoreboard[8]}</th>
+            <th className="cell">{scoreboard[9]}</th>
           </tr>
           <tr>
             <td>Score</td>
-            <th>{isNaN(curScore[0]) ? "" : curScore[0]}</th>
-            <th>{isNaN(curScore[1]) ? "" : curScore[1]}</th>
-            <th>{isNaN(curScore[2]) ? "" : curScore[2]}</th>
-            <th>{isNaN(curScore[3]) ? "" : curScore[3]}</th>
-            <th>{isNaN(curScore[4]) ? "" : curScore[4]}</th>
-            <th>{isNaN(curScore[5]) ? "" : curScore[5]}</th>
-            <th>{isNaN(curScore[6]) ? "" : curScore[6]}</th>
-            <th>{isNaN(curScore[7]) ? "" : curScore[7]}</th>
-            <th>{isNaN(curScore[8]) ? "" : curScore[8]}</th>
-            <th>{isNaN(curScore[9]) ? "" : curScore[9]}</th>
+            <ScoreCell curScore={curScore} />
           </tr>
         </tbody>
       </table>
     );
   }
 }
+
+const ScoreCell = props => {
+  return props.curScore.map(score => (
+    <th key={score} className="cell">
+      {isNaN(score) ? "" : score}
+    </th>
+  ));
+};
+
 export default Simulator;
